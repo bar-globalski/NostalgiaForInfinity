@@ -37,3 +37,25 @@ services:
       --log-file user_data/logs/${FREQTRADE__BOT_NAME:-Example_Test_Account}-${FREQTRADE__EXCHANGE__NAME:-binance}-${FREQTRADE__STRATEGY:-NostalgiaForInfinityX7}-${FREQTRADE__TRADING_MODE:-futures}.log
       --strategy-path .
       -v
+
+  nfi-updater:
+    build:
+      context: .
+      dockerfile: "./docker/Dockerfile.updater"
+    container_name: ${FREQTRADE__BOT_NAME:-Example_Test_Account}_${FREQTRADE__EXCHANGE__NAME:-binance}_${FREQTRADE__TRADING_MODE:-futures}-nfi-updater
+    restart: unless-stopped
+    depends_on:
+      - freqtrade
+    environment:
+      STRATEGY: ${FREQTRADE__STRATEGY:-NostalgiaForInfinityX7}
+      EXCHANGE: ${FREQTRADE__EXCHANGE__NAME:-binance}
+      NFI_UPDATE_CRON: ${NFI_UPDATE_CRON:-0 10 * * *}
+      NFI_PAIRLIST_FILE: ${NFI_PAIRLIST_FILE:-}
+      TZ: ${TZ:-UTC}
+      COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME:-freqtrade-nfi}
+    volumes:
+      - ".:/data"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    env_file:
+      - path: .env
+        required: false
